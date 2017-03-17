@@ -1,6 +1,6 @@
-int print_Clock(void);
-int read_temp(void);
-int read_humidity(void);
-int read_moist(void);
-int read_light(void);
-
+int right_button_pressed(int state);
+int left_button_pressed(int state);
+void state_fails(int state);
+int read_light();
+int read_moist();
+int read_soil();

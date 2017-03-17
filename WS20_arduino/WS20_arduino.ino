@@ -3,6 +3,7 @@
 #include <DHT.h>
 #include <Arduino.h>
 #include <Wire.h>
+#include "functions.h"
 
 #define DHTPIN_INDOORS 8
 #define DHTTYPE DHT11
@@ -12,6 +13,7 @@
 #define LCD_ADDRESS 0x3F
 #define RIGHT_BUTTON 12
 #define LEFT_BUTTON 11
+#define SOIL_SENSOR A2
 
 DHT dht_indoors(DHTPIN_INDOORS, DHTTYPE);
 DS3231  rtc(SDA, SCL);
@@ -25,8 +27,6 @@ void setup() {
     lcd.begin (16,2); //  <<----- My LCD was 16x2
     // Turn on the backlight
     lcd.setBacklightPin(3, POSITIVE);
-    lcd.setBacklight(HIGH);
-    lcd.home (); // go home
     pinMode(RIGHT_BUTTON, INPUT);
     pinMode(LEFT_BUTTON, INPUT);
 
@@ -58,6 +58,8 @@ void print_Clock(int state) {
         lcd.print(rtc.getDateStr());
         lcd.setCursor (0,1);
         lcd.print(rtc.getTimeStr());
+        lcd.print(" ");
+        lcd.print(rtc.getDOWStr());
     }
 }
 
@@ -86,65 +88,58 @@ int read_humidity(int state) {
     return humidity;
 }
 
-int read_moist(int state) {
-    int moist = analogRead(MOIST_SENSOR);
-    Serial.println(moist);
-    // Print moist-value to large LCD screen
+void high_low_light(int light){
+    if (light > 250)
+        lcd.setBacklight(HIGH);
+    else if (light <= 250)
+        lcd.setBacklight(LOW);
+}
+
+void print_light_moist_LCD(int state, int light, int moist){
+    high_low_light(light);
+
     if (state == 3) {
         lcd.setCursor (0,0);
         lcd.print(moist);
         lcd.print(" moistness");
-    }
-    return moist;
-}
-
-int read_light(int state) {
-    int light = analogRead(PHOTOTRANSISTOR);
-    Serial.println(light);
-    // Print light-value to large LCD screen
-    if (state == 3) {
         lcd.setCursor (0,1);
         lcd.print(light);
         lcd.print(" lumens");
     }
-    return light;
 }
 
-int right_button_pressed(int state) {
-    if (state == 1) return 2;
-    else if (state == 2) return 3;
-    else if (state == 3) return 1;
-    else return (-1);
-}
-
-int left_button_pressed(int state) {
-    if (state == 1) return 3;
-    else if (state == 2) return 1;
-    else if (state == 3) return 2;
-    else return (-1);
-}
-void state_fails(int state) {
-    Serial.println("Something went wrong, state is out of bounds: ");
-    Serial.println(state);
+void print_soil_LCD(int state, int soil){
+    if (state == 4) {
+        lcd.setCursor (6,0);
+        lcd.print("OH SHIT");
+        lcd.setCursor (0,1);
+        lcd.print("Page for soil");
+    }
 }
 
 void loop() {
     static int state = 1;
     if (digitalRead(RIGHT_BUTTON) == 0) {
+        lcd.clear();
         state = right_button_pressed(state);
-        if (state < 1) state_fails(state);
     }
     if (digitalRead(LEFT_BUTTON) == 0) {
+        lcd.clear();
         state = left_button_pressed(state);
-        if (state < 1) state_fails(state);
     }
+    if (state < 1) {
+        state_fails(state);
+        lcd.print(state);
+    }
+
     print_Clock(state);
     read_temp(state);
     read_humidity(state);
-    read_moist(state);
-    read_light(state);
-
-
+    int moist = read_moist();
+    int light = read_light();
+    int soil = read_soil();
+    print_light_moist_LCD(state, light, moist);
+    print_soil_LCD(state, soil);
     Serial.println(state);
-    delay(1000);
+    delay(200);
 }
