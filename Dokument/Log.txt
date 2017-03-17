@@ -1,13 +1,40 @@
 16-03-2017
+	
 	Initierat en Git-mapp för versionhantering
+	
 	Börjat skriva projektbeskrivning
+	
 	Valt komponenter för projektet
+	
 	Diskuterat med Peter om modularitet och framtida utbyggnad
+
+
 17-03-2017
+
 	Skickat in projektbeskrivning
 	
+
+	Kopplat in och fått skärmen att funka
+	Samtliga sensorer inkopplade, spottar ut värden både till Seriella 
+	monitorn och till skärmen. 
+	Bakgrundsbelysningen till skärmen slocknar om ljusstyrkan i rummet 
+	sjunker under 250 "ljusenheter". 
+	Modulariserar bort de funktioner som inte innehåller funktioner från
+	DHT, DS3231 eller LCD biblioteken.
+	Standardiserar koden, med stora bokstäver i #defines, mellanrum till 
+	måsvingar, inga måsvingar om satsen bara innehåller en rad.
+	Har förberett för installation av jordfuktsmätare. Koden är klar, 
+	bara att koppla in den på A2. 
+	Byggt ett system för att sätta på en 230mm fläkt i 180s vid knapptryckning
+	för att få bort föroreningar vid lödning. 
+
 18-03-2017
+
 	
+
 19-03-2017
+
 	
+
 20-03-2017
+	
