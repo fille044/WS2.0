@@ -1,0 +1,17 @@
+Provkörning med Ebba, 21:51 19/03/2017
+
+Har förklarat hur produkten kommer utformas.
+Simulerar nattkörning med tejpbit på fototransistor. 
+Nätadapter sätts i väggen
+Mycket prylar, hade känts lättare om det varit undangömt
+Förklara vart samtliga sensorer ska, de som inte sitter internt. 
+Om man bara ser två knappar och skärmen blir det jätteenkelt.
+Sladdarna skräms
+Störande blinkande vid state 4, jord
+
+Alla växter vill inte vara lika blöta eller torra. 
+Setting system för att välja vilken växt som står i krukan. 
+Kaktusen vill stå tort. Om det gått 14 dagar sedan sist den 
+var fuktig, varna om att vattna. 
+
+Automatfukta fungerar bara med vissa växter.

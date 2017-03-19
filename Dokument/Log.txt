@@ -30,10 +30,16 @@
 
 18-03-2017
 
-	
+	Tidaholm
+
 
 19-03-2017
 
+	Bytt ut tidigare två opålitliga knappar mot två stora tydliga arkadknappar.
+	Införskaffat nätadapter 3-12V, lött på kontakter för att kunna använda på 
+	breadboard. Används just nu till lödfläkten på 12V som senare även kommer få 
+	en 12V LED list. Monteras när monteringsanordning är fixad. 
+	Intervju
 	
 
 20-03-2017

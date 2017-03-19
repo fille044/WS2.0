@@ -7,13 +7,14 @@
 
 #define DHTPIN_INDOORS 8
 #define DHTTYPE DHT11
-#define PHOTOTRANSISTOR A0
-#define MOIST_SENSOR A1
 #define POSITIVE 0
 #define LCD_ADDRESS 0x3F
 #define RIGHT_BUTTON 12
 #define LEFT_BUTTON 11
-#define SOIL_SENSOR A2
+#define YELLOW_LED 0
+#define RED_LED 1
+#define ON HIGH
+#define OFF LOW
 
 DHT dht_indoors(DHTPIN_INDOORS, DHTTYPE);
 DS3231  rtc(SDA, SCL);
@@ -27,8 +28,6 @@ void setup() {
     lcd.begin (16,2); //  <<----- My LCD was 16x2
     // Turn on the backlight
     lcd.setBacklightPin(3, POSITIVE);
-    pinMode(RIGHT_BUTTON, INPUT);
-    pinMode(LEFT_BUTTON, INPUT);
 
     /*
     * Uncomment to set date and time
@@ -109,11 +108,36 @@ void print_light_moist_LCD(int state, int light, int moist){
 }
 
 void print_soil_LCD(int state, int soil){
-    if (state == 4) {
-        lcd.setCursor (6,0);
-        lcd.print("OH SHIT");
-        lcd.setCursor (0,1);
-        lcd.print("Page for soil");
+    if (soil>850) {
+        digitalWrite(RED_LED, ON);
+        if (state == 4) {
+            lcd.clear();
+            lcd.setCursor (0,0);
+            lcd.print("Soil: CRITICAL");
+            lcd.setCursor (0,1);
+            lcd.print(soil);
+        }
+    }
+    else if (soil>650 && soil <= 850) {
+        digitalWrite(YELLOW_LED, ON);
+        if (state == 4) {
+            lcd.clear();
+            lcd.setCursor (0,0);
+            lcd.print("Soil: WARNING");
+            lcd.setCursor (0,1);
+            lcd.print(soil);
+        }
+    }
+    else if (soil <= 650) {
+        if (state == 4) {
+            lcd.clear();
+            lcd.setCursor (0,0);
+            lcd.print("Soil: OK");
+            lcd.setCursor (0,1);
+            lcd.print(soil);
+        }
+        digitalWrite(YELLOW_LED, OFF);
+        digitalWrite(RED_LED, OFF);
     }
 }
 
