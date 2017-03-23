@@ -6,13 +6,14 @@
 #include "functions.h"
 
 #define DHTPIN_INDOORS 8
+#define DHTPIN_OUTDOORS 7
 #define DHTTYPE DHT11
 #define POSITIVE 0
 #define LCD_ADDRESS 0x3F
 #define RIGHT_BUTTON 12
 #define LEFT_BUTTON 11
-#define YELLOW_LED 0
-#define RED_LED 1
+#define YELLOW_LED 2
+#define RED_LED 3
 #define ON HIGH
 #define OFF LOW
 #define CACTUS_WARNING 700
@@ -25,12 +26,14 @@
 #define KRYSANTEMUM_CRITICAL 1080
 
 DHT dht_indoors(DHTPIN_INDOORS, DHTTYPE);
+DHT dht_outdoors(DHTPIN_OUTDOORS, DHTTYPE);
 DS3231  rtc(SDA, SCL);
 LiquidCrystal_I2C lcd(LCD_ADDRESS, 2, 1, 0, 4, 5, 6, 7);    // Set the LCD I2C address
 
 void setup() {
     Serial.begin(9600);
     dht_indoors.begin();
+    dht_outdoors.begin();
     rtc.begin();
     Wire.begin();
     lcd.begin (16,2); //  My LCD is 16x2 characters
@@ -39,9 +42,9 @@ void setup() {
 
     /*
     * Uncomment to set date and time
-    rtc.setDOW(FRIDAY);     // Set Day-of-Week to SUNDAY
-    rtc.setTime(10, 35, 0);     // Set the time to 12:00:00 (24hr format)
-    rtc.setDate(17, 3, 2017);   // Set the date to 16-03-2017
+    rtc.setDOW(FRIDAY);     // Set Day-of-Week to SUNDAY*/
+    rtc.setTime(11, 26, 00);     // Set the time to 12:00:00 (24hr format)
+    /*rtc.setDate(17, 3, 2017);   // Set the date to 16-03-2017
     */
 }
 
@@ -71,26 +74,35 @@ void print_Clock(int state) {
 }
 
 int read_temp(int state) {
-
     // Print temp to large LCD screen
     if (state == 2) {
-        int temp = dht_indoors.readTemperature();
+        int temp_in = dht_indoors.readTemperature();
+        int tempout = dht_outdoors.readTemperature();
         lcd.setCursor (0,0);
-        lcd.print(temp);
-        lcd.print(" C");
-        return temp;
+        lcd.print(temp_in);
+        lcd.print("C in, ");
+        lcd.setCursor (0,1);
+        lcd.print("34");
+        //lcd.print(temp_out);
+        lcd.print("C out, ");
+        return temp_in;
     }
 }
-
 
 int read_humidity(int state) {
     // Print humidity to large LCD screen
     if (state == 2) {
-        int humidity = dht_indoors.readHumidity();
-        lcd.setCursor (0,1);
-        lcd.print(humidity);
-        lcd.print(" % RH");
-        return humidity;
+        int humidity_in = dht_indoors.readHumidity();
+        int humidity_out = dht_outdoors.readHumidity();
+        lcd.setCursor (8,0);
+        lcd.print(humidity_in);
+        lcd.print("% RH in");
+        
+        lcd.setCursor (8,1);
+        lcd.print("34");
+        //lcd.print(humidity_out);
+        lcd.print("% RH out");
+        return humidity_in;
     }
 }
 
@@ -141,9 +153,10 @@ void print_soil_LCD(int state, int current_soil, int critical_soil, int warning_
             lcd.print("Soil: OK");
             lcd.setCursor (0,1);
             lcd.print(current_soil);
+            digitalWrite(YELLOW_LED, OFF);
+            digitalWrite(RED_LED, OFF);
         }
-        digitalWrite(YELLOW_LED, OFF);
-        digitalWrite(RED_LED, OFF);
+
     }
 }
 
@@ -234,9 +247,10 @@ void loop() {
     Serial.println(critical_soil);
     Serial.println(warning_soil);
     Serial.println(state);
-    critical_soil = set_critical_soil(state);
-    warning_soil = set_warning_soil(state);
-
+    if (state > 70){
+        critical_soil = set_critical_soil(state);
+        warning_soil = set_warning_soil(state);
+    }
     print_Clock(state);
     int temp = read_temp(state);
     int humidity = read_humidity(state);
@@ -247,10 +261,5 @@ void loop() {
     print_soil_LCD(state, soil, critical_soil, warning_soil);
     print_setting_LCD(state);
     //print_to_serial(state, light, moist, soil, temp, humidity);
-
     delay(200);
-
-
-
-
 }
