@@ -1,40 +1,33 @@
 #include "functions.h"
 #include <Arduino.h>
-#define PHOTOTRANSISTOR A0
-#define MOIST_SENSOR A1
-#define SOIL_SENSOR A2
-#define SOIL_WARNING 650
-#define SOIL_CRITICAL 850
 
-int read_light() {
-    int light = analogRead(PHOTOTRANSISTOR);
-    //high_low_light(light);
-    // Print light-value to large LCD screen
-    return light;
-}
+/*
+ * Simple functions that reads the value of all analog sensors and returns the value
+ * Also the troubleshooting functions is here
+*/
 
-int read_moist() {
-    int moist = analogRead(MOIST_SENSOR);
-    return moist;
-}
-
-int read_soil() {
+int read_soil() 
+{
     int soil = analogRead(SOIL_SENSOR);
     return soil;
 }
 
-void print_to_serial(int state, int light, int moist, int soil, int temp, int humidity){
+void print_to_serial(int state, int soil, int temp, int humidity, 
+        int critical_soil, int warning_soil)
+{
     Serial.print("State: ");
     Serial.println(state);
-    Serial.print("Light: ");
-    Serial.println(light);
-    Serial.print("Moist: ");
-    Serial.println(moist);
     Serial.print("Temp: ");
     Serial.println(temp);
     Serial.print("Humidity: ");
     Serial.println(humidity);
     Serial.print("Soil: ");
     Serial.println(soil);
+    Serial.print("Critical Soil level: ");
+    Serial.println(critical_soil);
+    Serial.print("Wardning Soil level: ");
+    Serial.println(warning_soil);
+    Serial.println(" ");
     Serial.println(" ------------ ");
+    delay(2000);
 }

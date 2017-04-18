@@ -28,11 +28,6 @@
 	Byggt ett system för att sätta på en 230mm fläkt i 180s vid knapptryckning
 	för att få bort föroreningar vid lödning. 
 
-18-03-2017
-
-	Tidaholm
-
-
 19-03-2017
 
 	Bytt ut tidigare två opålitliga knappar mot två stora tydliga arkadknappar.
@@ -42,5 +37,11 @@
 	Intervju
 	
 
-20-03-2017
+10-04-2017
+	Kommenterat och strukturerat upp koden. 
+	Försökt implementera all kod till Atmel, ingen framgång, felmeddelanden från 
+	LCDns bakgrundsbelysning.
+	Utökat felsökningsfunktion så den även visar jordens olika nivåer, varning 
+	och kritisk.
+	
 	

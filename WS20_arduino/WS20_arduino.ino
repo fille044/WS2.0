@@ -1,233 +1,243 @@
+/*
+ * This sketch with the including librarys together creates a complete
+ * weatherstation.
+ *
+ * All of the defined values is stored in functions.h
+ *
+ * Featuring :
+ * Indoor and outdoor measusement of both temperature and relative air humidity (RH)
+ * Realtime clock for both time and date
+ * Soil humidity with easy to use sensor
+ * Easy to use navigation where you can choose what plant you have
+ * Bright LCD-screen to show you just what you need.
+ * Implemented Serial Monitor -function for easy troubleshooting.
+ *
+ * At the end of this page, there is two commented functions that when uncommented,
+ * one will turn on screen sensitivity, and the other will print all values collected to Serial Monitor.
+*/
+
 #include <LiquidCrystal_I2C.h>
 #include <DS3231.h>
 #include <DHT.h>
 #include <Arduino.h>
 #include <Wire.h>
 #include "functions.h"
+#include <Adafruit_DotStar.h>
+#include <SPI.h>
 
-#define DHTPIN_INDOORS 8
-#define DHTPIN_OUTDOORS 7
-#define DHTTYPE DHT11
-#define POSITIVE 0
-#define LCD_ADDRESS 0x3F
-#define RIGHT_BUTTON 12
-#define LEFT_BUTTON 11
-#define YELLOW_LED 2
-#define RED_LED 3
-#define ON HIGH
-#define OFF LOW
-#define CACTUS_WARNING 700
-#define CACTUS_CRITICAL 850
-#define JULSTJARNA_WARNING 500
-#define JULSTJARNA_CRITICAL 700
-#define HORTNENSIA_WARNING 200
-#define HORTNENSIA_CRITICAL 800
-#define KRYSANTEMUM_WARNING 900
-#define KRYSANTEMUM_CRITICAL 1080
-
+Adafruit_DotStar LED = Adafruit_DotStar(LED_NUMPIXELS,
+        LED_DATAPIN, LED_CLOCKPIN, DOTSTAR_BRG);
 DHT dht_indoors(DHTPIN_INDOORS, DHTTYPE);
 DHT dht_outdoors(DHTPIN_OUTDOORS, DHTTYPE);
 DS3231  rtc(SDA, SCL);
-LiquidCrystal_I2C lcd(LCD_ADDRESS, 2, 1, 0, 4, 5, 6, 7);    // Set the LCD I2C address
+// ADRESS OF LCD, DS, RW, E, D0, D1, D2, D3, D4
+// This works for the LCD that was used in this project
+LiquidCrystal_I2C lcd(LCD_ADDRESS, 2, 1, 0, 4, 5, 6, 7);
 
-void setup() {
+void setup()
+{
     Serial.begin(9600);
     dht_indoors.begin();
     dht_outdoors.begin();
     rtc.begin();
     Wire.begin();
     lcd.begin (16,2); //  My LCD is 16x2 characters
-    // Turn on the backlight
     lcd.setBacklightPin(3, POSITIVE);
+    LED.begin(); // Initialize pins for output
+    LED.show();  // Turn all LEDs off ASAP
 
     /*
     * Uncomment to set date and time
-    rtc.setDOW(FRIDAY);     // Set Day-of-Week to SUNDAY*/
-    rtc.setTime(11, 26, 00);     // Set the time to 12:00:00 (24hr format)
-    /*rtc.setDate(17, 3, 2017);   // Set the date to 16-03-2017
+    * 14 seconds to upload
     */
+    //rtc.setDOW(FRIDAY);         // Set Day-of-Week to SUNDAY
+    //rtc.setTime(11, 49, 30);     // Set the time to 12:00:00 (24hr format)
+    //rtc.setDate(6, 4, 2017);    // Set the date to 16-03-2017
+    Serial.println("60 second calibration started");
+    delay(600);
+    Serial.println("Calibration finished");
 }
 
 /*
- * int state is a preparation for the navigation that may be implemented into the project
- * If the user is in page 2, state will be set to 2, and may or may not show the content.
+ * int state is for the navigation that has been implemented into the project
+ * If the user is on page 2, state will be set to 2, and will show the content on that page.
+ *
+ * ex. if state = 1, print_clock will run and output time and date to LCD
  */
 
-void print_Clock(int state) {
-    // Send day of week
-    Serial.print(rtc.getDOWStr());
-    Serial.print(" ");
-    // Send date
-    Serial.print(rtc.getDateStr());
-    Serial.print(" -- ");
-    // Send time
-    Serial.println(rtc.getTimeStr());
-    // Print date and time to large LCD screen
+void print_Clock(int state)
+{   // Print date and time to large LCD screen
     if (state == 1) {
         lcd.setCursor (0,0);
-        lcd.print(rtc.getDateStr());
+        lcd.print(rtc.getDateStr(FORMAT_LONG));
+        lcd.print(" ");
+        lcd.print(rtc.getDOWStr(FORMAT_SHORT));
         lcd.setCursor (0,1);
         lcd.print(rtc.getTimeStr());
         lcd.print(" ");
-        lcd.print(rtc.getDOWStr());
     }
 }
 
-int read_temp(int state) {
-    // Print temp to large LCD screen
+int read_temp(int state)
+{   // Print temp to large LCD screen
     if (state == 2) {
         int temp_in = dht_indoors.readTemperature();
-        int tempout = dht_outdoors.readTemperature();
+        int temp_out = dht_outdoors.readTemperature();
         lcd.setCursor (0,0);
         lcd.print(temp_in);
-        lcd.print("C in, ");
+        lcd.print("%C, ");
         lcd.setCursor (0,1);
-        lcd.print("34");
-        //lcd.print(temp_out);
-        lcd.print("C out, ");
+        lcd.print(temp_out);
+        lcd.print("%C, ");
         return temp_in;
     }
 }
 
-int read_humidity(int state) {
-    // Print humidity to large LCD screen
+int read_humidity(int state)
+{   // Print humidity to large LCD screen
     if (state == 2) {
         int humidity_in = dht_indoors.readHumidity();
         int humidity_out = dht_outdoors.readHumidity();
-        lcd.setCursor (8,0);
+        lcd.setCursor (6,0);
         lcd.print(humidity_in);
         lcd.print("% RH in");
-        
-        lcd.setCursor (8,1);
-        lcd.print("34");
-        //lcd.print(humidity_out);
+
+        lcd.setCursor (6,1);
+        lcd.print(humidity_out);
         lcd.print("% RH out");
         return humidity_in;
     }
 }
 
-void high_low_light(int light){
-    if (light > 100)
-        lcd.setBacklight(HIGH);
-    else if (light <= 100)
-        lcd.setBacklight(LOW);
-}
-
-void print_light_moist_LCD(int state, int light, int moist){
-    high_low_light(light);
-    if (state == 3) {
-        lcd.setCursor (0,0);
-        lcd.print(moist);
-        lcd.print(" moistness");
-        lcd.setCursor (0,1);
-        lcd.print(light);
-        lcd.print(" lumens");
+void light_LED(int colour)
+{
+    // Lights up the LED-strip in the correct colour.
+    // Call 1 for RED, 2 for yellow and 3 for green.
+    for (int x = 0; x < 6; x++ ){
+        LED.setBrightness(100);
+        if (colour == 1){
+            LED.setPixelColor(x, RED); // 'On' pixel at head
+            LED.setBrightness(255);
+        }
+        else if (colour == 2)
+            LED.setPixelColor(x, YELLOW); // 'On' pixel at head
+        else if (colour == 3)
+            LED.setPixelColor(x, GREEN); // 'On' pixel at head
+        LED.show(); // Refresh strip
     }
 }
 
-void print_soil_LCD(int state, int current_soil, int critical_soil, int warning_soil){
-    if (current_soil>critical_soil) {
-        digitalWrite(RED_LED, ON);
-        if (state == 4) {
-            lcd.clear();
+// Lag-free display that prints level and value without any lcd.clear() functions
+void print_soil_LCD(int state, int current_soil, int critical_soil, int warning_soil)
+{
+    // Light up RED LED if very dry
+    if (current_soil >= critical_soil) {
+        light_LED(1);
+        if (state == 3) {
             lcd.setCursor (0,0);
             lcd.print("Soil: CRITICAL");
             lcd.setCursor (0,1);
             lcd.print(current_soil);
         }
     }
-    else if (current_soil>warning_soil && current_soil <= critical_soil) {
-        digitalWrite(YELLOW_LED, ON);
-        if (state == 4) {
-            lcd.clear();
+    //Light up YELLOW LED if  dry
+    else if (current_soil >= warning_soil && current_soil < critical_soil) {
+        light_LED(2);
+        if (state == 3) {
             lcd.setCursor (0,0);
-            lcd.print("Soil: WARNING");
+            lcd.print("Soil: WARNING ");
             lcd.setCursor (0,1);
+            //Prints current soil value
             lcd.print(current_soil);
+            if(current_soil < 1000) {
+                lcd.setCursor (3,1);
+                lcd.print(" ");
+            }
         }
     }
-    else if (current_soil <= warning_soil) {
-        if (state == 4) {
-            lcd.clear();
+    // If moister than warning level, it says ok, and no LED
+    else if (current_soil < warning_soil) {
+        light_LED(3);
+        if (state == 3) {
             lcd.setCursor (0,0);
-            lcd.print("Soil: OK");
+            lcd.print("Soil: OK      ");
             lcd.setCursor (0,1);
+            //Prints current soil value
             lcd.print(current_soil);
-            digitalWrite(YELLOW_LED, OFF);
-            digitalWrite(RED_LED, OFF);
+            if(current_soil < 1000) {
+                lcd.setCursor (3,1);
+                lcd.print(" ");
+            }
         }
-
     }
 }
 
-int set_critical_soil(int state){
-    if (state == 71){
+// Navigation system that let´s the user choose which plant to adjust the critical level to.
+// Set plant and levels in functions.h
+int set_critical_soil(int state)
+{
+    if (state == 71) {
         lcd.setCursor(0,0);
-        lcd.print("Cactus");
-        return CACTUS_CRITICAL;
+        lcd.print(PLANT_ONE);
+        return PLANT_ONE_CRITICAL;
     }
-    else if (state == 72){
+    else if (state == 72) {
         lcd.setCursor(0,0);
-        lcd.print("Julstjarna");
-        return JULSTJARNA_CRITICAL;
+        lcd.print(PLANT_TWO);
+        return PLANT_TWO_CRITICAL;
      }
-     else if (state == 73){
+     else if (state == 73) {
          lcd.setCursor(0,0);
-         lcd.print("Hortensia");
-         return HORTNENSIA_CRITICAL;
+         lcd.print(PLANT_THREE);
+         return PLANT_THREE_CRITICAL;
       }
-      else if (state == 74){
+      else if (state == 74) {
           lcd.setCursor(0,0);
-          lcd.print("Krysantemum");
-          return KRYSANTEMUM_CRITICAL;
+          lcd.print(PLANT_FOUR);
+          return PLANT_FOUR_CRITICAL;
        }
-        /*CACTUS_WARNING 700
-        CACTUS_CRITICAL 850
-        FLOWER_WARNING 500
-        FLOWER_CRITICAL 700*/
 }
 
-int set_warning_soil(int state){
-    if (state == 71){
-        return CACTUS_WARNING;
+// Navigation system that let´s the user choose which plant to adjust the critical level to.
+int set_warning_soil(int state)
+{
+    if (state == 71) {
+        return PLANT_ONE_WARNING;
     }
-     else if (state == 72){
-         return JULSTJARNA_WARNING;
+     else if (state == 72) {
+         return PLANT_TWO_WARNING;
      }
-     else if (state == 73){
-         return HORTNENSIA_WARNING;
+     else if (state == 73) {
+         return PLANT_THREE_WARNING;
      }
-     else if (state == 74){
-         return KRYSANTEMUM_WARNING;
+     else if (state == 74) {
+         return PLANT_FOUR_WARNING;
      }
-
-        /*CACTUS_WARNING 700
-        CACTUS_CRITICAL 850
-        FLOWER_WARNING 500
-        FLOWER_CRITICAL 700*/
 }
 
-void print_setting_LCD(int state){
-    if (state == 5){
+// Print the UI for the settings menu, accessed by pressing both buttons
+void print_setting_LCD(int state)
+{
+    if (state == 5) {
         lcd.setCursor(0,0);
         lcd.print("Settings");
         lcd.setCursor(0,1);
         lcd.print("Double for back");
     }
-    if (state == 6){
+    if (state == 6) {
         lcd.setCursor(0,0);
-        lcd.print("Set clock and date");
+        lcd.print("Set clock, date");
+        lcd.setCursor(0,1);
+        lcd.print("Not until v2.0");
     }
-    if (state == 7){
+    if (state == 7) {
         lcd.setCursor(0,0);
         lcd.print("Choose plant");
     }
 }
 
-void loop() {
-    static int state = 1;
-    static int critical_soil = 1000;
-    static int warning_soil = 300;
+int main_function(int state, int critical_soil, int warning_soil)
+{
     if (digitalRead(RIGHT_BUTTON) == 0) {
         lcd.clear();
         state = right_button_pressed(state);
@@ -236,30 +246,59 @@ void loop() {
         lcd.clear();
         state = left_button_pressed(state);
     }
-    if (digitalRead(LEFT_BUTTON)==0 &&(digitalRead(RIGHT_BUTTON)==0)){
+    if (digitalRead(LEFT_BUTTON)==0 &&(digitalRead(RIGHT_BUTTON)==0)) {
         state = both_buttons_pressed(state);
     }
+    // If something goes wrong with the statements above, they will return -1
+    // Giving the user a hint that the system needs a reboot.
     if (state < 1) {
         state_fails(state);
-        lcd.print(state);
+        lcd.setCursor(0,0);
+        lcd.print("Contact someone smart");
     }
 
-    Serial.println(critical_soil);
-    Serial.println(warning_soil);
-    Serial.println(state);
-    if (state > 70){
-        critical_soil = set_critical_soil(state);
-        warning_soil = set_warning_soil(state);
-    }
+
     print_Clock(state);
     int temp = read_temp(state);
     int humidity = read_humidity(state);
-    int moist = read_moist();
-    int light = read_light();
     int soil = read_soil();
-    print_light_moist_LCD(state, light, moist);
     print_soil_LCD(state, soil, critical_soil, warning_soil);
     print_setting_LCD(state);
-    //print_to_serial(state, light, moist, soil, temp, humidity);
+
+    //  Uncomment to print all valuable numbers to Serial monitor
+    //print_to_serial(state, soil, temp, humidity, critical_soil, warning_soil);
+
     delay(200);
+    return state;
+}
+
+
+void loop()
+{
+    int value = digitalRead(IR_SENSOR);
+    Serial.println(value);
+    delay(200);
+    static int critical_soil = 1000;
+    static int warning_soil = 300;
+    // If the IR_sensor senses movement, it will run the main_function
+    // which contains everything about the LCD.
+    if (value == 1){
+        lcd.setBacklight(HIGH);
+        // 100 laps equals 23 seconds of watching the screen
+        for (int timer = 0; timer < 100; timer++){
+            static int state = 1;
+            state = main_function(state, critical_soil, warning_soil);
+            if (state > 70) {
+                critical_soil = set_critical_soil(state);
+                warning_soil = set_warning_soil(state);
+            }
+        }
+    }
+    // If no movement, only the soil sensor will update and show via the LED-strip.
+    else{
+        int soil = read_soil();
+        print_soil_LCD(1, soil, critical_soil, warning_soil);
+        lcd.clear();
+        lcd.setBacklight(LOW);
+    }
 }
