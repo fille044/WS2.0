@@ -42,11 +42,12 @@ void setup()
     rtc.begin();
     Wire.begin();
     lcd.begin (16,2); //  My LCD is 16x2 characters
-    lcd.setBacklightPin(3, POSITIVE);
-    LED.begin(); // Initialize pins for output
-    LED.show();  // Turn all LEDs off ASAP
+    LED.begin();
 
-    /*
+    LED.show();  // Turn all LEDs off ASAP
+    lcd.setBacklightPin(3, POSITIVE);
+
+    /*p
     * Uncomment to set date and time
     * 14 seconds to upload
     */
@@ -302,5 +303,5 @@ void loop()
         lcd.setBacklight(LOW);
         delay(2000);
     }
-    
+
 }
