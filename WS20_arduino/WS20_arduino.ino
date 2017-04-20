@@ -54,7 +54,7 @@ void setup()
     //rtc.setTime(11, 49, 30);     // Set the time to 12:00:00 (24hr format)
     //rtc.setDate(6, 4, 2017);    // Set the date to 16-03-2017
     Serial.println("60 second calibration started");
-    delay(600);
+    delay(60000);
     Serial.println("Calibration finished");
 }
 
@@ -262,6 +262,7 @@ int main_function(int state, int critical_soil, int warning_soil)
     int temp = read_temp(state);
     int humidity = read_humidity(state);
     int soil = read_soil();
+    Serial.println(soil);
     print_soil_LCD(state, soil, critical_soil, warning_soil);
     print_setting_LCD(state);
 
@@ -276,8 +277,7 @@ int main_function(int state, int critical_soil, int warning_soil)
 void loop()
 {
     int value = digitalRead(IR_SENSOR);
-    Serial.println(value);
-    delay(200);
+    delay(100);
     static int critical_soil = 1000;
     static int warning_soil = 300;
     // If the IR_sensor senses movement, it will run the main_function
@@ -285,7 +285,7 @@ void loop()
     if (value == 1){
         lcd.setBacklight(HIGH);
         // 100 laps equals 23 seconds of watching the screen
-        for (int timer = 0; timer < 100; timer++){
+        for (int timer = 0; timer < 200; timer++){
             static int state = 1;
             state = main_function(state, critical_soil, warning_soil);
             if (state > 70) {
@@ -300,5 +300,7 @@ void loop()
         print_soil_LCD(1, soil, critical_soil, warning_soil);
         lcd.clear();
         lcd.setBacklight(LOW);
+        delay(2000);
     }
+    
 }
