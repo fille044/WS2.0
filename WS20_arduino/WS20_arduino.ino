@@ -122,7 +122,7 @@ void light_LED(int colour)
         else if (colour == 2)
             LED.setPixelColor(x, YELLOW); // 'On' pixel at head
         else if (colour == 3)
-            LED.setPixelColor(x, GREEN); // 'On' pixel at head
+            LED.setPixelColor(x, BLACK); // No color at all
         LED.show(); // Refresh strip
     }
 }

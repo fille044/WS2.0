@@ -1,0 +1,28 @@
+/*int set_time(int state){
+    int mi = 0, hi = 0;
+    if (state == 611){
+        if (digitalRead(RIGHT_BUTTON) == 0){
+            hi++;
+        }
+        else if (digitalRead(LEFT_BUTTON) == 0){
+            hi--;
+        }
+        rtc.setTime(hi, mi, 0);     // Set the time to 12:00:00 (24hr format)
+        if (digitalRead(LEFT_BUTTON)==0 &&(digitalRead(RIGHT_BUTTON)==0)){
+            return 6;
+        }
+    }
+    else if (state == 621){
+        if (digitalRead(RIGHT_BUTTON) == 0){
+            mi++;
+        }
+        else if (digitalRead(LEFT_BUTTON) == 0){
+            mi--;
+        }
+        rtc.setTime(hi, mi, 0);     // Set the time to 12:00:00 (24hr format)
+        if (digitalRead(LEFT_BUTTON)==0 &&(digitalRead(RIGHT_BUTTON)==0)){
+            return 6;
+        }
+    }
+
+}*/
